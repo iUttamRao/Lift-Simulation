@@ -1,9 +1,21 @@
 let liftsState = [];
 
 function generateUI() {
-    const floors = parseInt(document.getElementById('floors').value);
-    const lifts = parseInt(document.getElementById('lifts').value);
+    const floorsInput = document.getElementById('floors').value;
+    const liftsInput = document.getElementById('lifts').value;
     const building = document.getElementById('building');
+
+    if (!floorsInput || isNaN(floorsInput) || parseInt(floorsInput) <= 0) {
+        alert("Please enter a valid positive number for floors.");
+        return;
+    }
+    if (!liftsInput || isNaN(liftsInput) || parseInt(liftsInput) <= 0) {
+        alert("Please enter a valid positive number for lifts.");
+        return;
+    }
+
+    const floors = parseInt(floorsInput);
+    const lifts = parseInt(liftsInput);
 
     building.innerHTML = '';
     liftsState = [];
