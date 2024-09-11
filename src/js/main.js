@@ -42,7 +42,7 @@ function generateUI() {
         downButton.textContent = 'Down';
         downButton.onclick = () => callLift(i + 1);
 
-        if( i !== floors - 1){
+        if (i !== floors - 1) {
             buttonsDiv.appendChild(upButton);
         }
         if (i !== 0) {
@@ -105,21 +105,41 @@ function callLift(floor) {
 function moveLift(liftIndex, targetFloor) {
     const lift = document.getElementById(`lift-${liftIndex + 1}`);
     const liftState = liftsState[liftIndex];
-    
+
     liftState.moving = true;
     const moveDistance = Math.abs(liftState.currentFloor - targetFloor);
     lift.style.transition = `transform ${moveDistance * 2}s`;
     lift.style.transform = `translateY(-${100 * (targetFloor - 1)}px)`;
 
-    setTimeout(() => {
-        openDoors(lift);
-        setTimeout(() => {
-            closeDoors(lift);
+    // Move the lift and handle doors in sequence
+    moveLiftAndHandleDoors(lift, moveDistance * 2000)
+        .then(() => {
             liftState.currentFloor = targetFloor;
             liftState.moving = false;
-        }, 2500);
-        console.log("Hello")
-    }, moveDistance * 2000);
+        })
+        .catch(error => {
+            console.error("Error during lift operation:", error);
+            liftState.moving = false; // Ensure the lift state is updated even if an error occurs
+        });
+}
+
+function moveLiftAndHandleDoors(lift, moveDuration) {
+    return new Promise((resolve, reject) => {
+        // Start lift movement
+        setTimeout(() => {
+            openDoors(lift);
+
+            // Wait for doors to open
+            setTimeout(() => {
+                closeDoors(lift);
+
+                // Wait for doors to close before resolving
+                setTimeout(() => {
+                    resolve();
+                }, 2500); // Duration doors stay closed
+            }, 2500); 
+        }, moveDuration);
+    });
 }
 
 function openDoors(lift) {
