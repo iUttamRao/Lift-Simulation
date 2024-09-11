@@ -108,6 +108,7 @@ function moveLift(liftIndex, targetFloor) {
     
     liftState.moving = true;
     const moveDistance = Math.abs(liftState.currentFloor - targetFloor);
+    lift.style.transition = `transform ${moveDistance * 2}s`;
     lift.style.transform = `translateY(-${100 * (targetFloor - 1)}px)`;
 
     setTimeout(() => {
@@ -117,6 +118,7 @@ function moveLift(liftIndex, targetFloor) {
             liftState.currentFloor = targetFloor;
             liftState.moving = false;
         }, 2500);
+        console.log("Hello")
     }, moveDistance * 2000);
 }
 
