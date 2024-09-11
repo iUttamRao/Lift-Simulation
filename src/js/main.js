@@ -42,7 +42,9 @@ function generateUI() {
         downButton.textContent = 'Down';
         downButton.onclick = () => callLift(i + 1);
 
-        buttonsDiv.appendChild(upButton);
+        if( i !== floors - 1){
+            buttonsDiv.appendChild(upButton);
+        }
         if (i !== 0) {
             buttonsDiv.appendChild(downButton);
         }
