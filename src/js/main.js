@@ -6,7 +6,7 @@ function generateUI() {
     const liftsInput = document.getElementById('lifts').value;
     const building = document.getElementById('building');
 
-    if (!floorsInput || isNaN(floorsInput) || parseInt(floorsInput) <= 0) {
+    if (!floorsInput || isNaN(floorsInput) || parseInt(floorsInput) <= 1) {
         alert("Please enter a valid positive number for floors.");
         return;
     }
