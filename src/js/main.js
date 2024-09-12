@@ -1,4 +1,5 @@
 let liftsState = [];
+let calls = {}; // Tracks active calls for each floor and direction
 
 function generateUI() {
     const floorsInput = document.getElementById('floors').value;
@@ -19,6 +20,7 @@ function generateUI() {
 
     building.innerHTML = '';
     liftsState = [];
+    calls = {}; // Reset the call tracking
 
     const liftWidth = 120;
     const containerWidth = liftWidth * lifts;
@@ -35,12 +37,12 @@ function generateUI() {
         const upButton = document.createElement('div');
         upButton.className = 'button up';
         upButton.textContent = 'Up';
-        upButton.onclick = () => callLift(i + 1);
+        upButton.onclick = () => callLift(i + 1, 'up');
 
         const downButton = document.createElement('div');
         downButton.className = 'button down';
         downButton.textContent = 'Down';
-        downButton.onclick = () => callLift(i + 1);
+        downButton.onclick = () => callLift(i + 1, 'down');
 
         if (i !== floors - 1) {
             buttonsDiv.appendChild(upButton);
@@ -84,8 +86,19 @@ function generateUI() {
     }
 }
 
-function callLift(floor) {
-    console.log(`Lift called to floor ${floor}`);
+function callLift(floor, direction) {
+    // If there's already a call in the same direction, do nothing
+    if (calls[floor] && calls[floor][direction]) {
+        console.log(`Lift already called for floor ${floor} and direction ${direction}`);
+        return;
+    }
+
+    if (!calls[floor]) {
+        calls[floor] = {};
+    }
+    calls[floor][direction] = true; // Mark the call as active for this floor and direction
+
+    console.log(`Lift called to floor ${floor} in direction ${direction}`);
     let selectedLift = null;
     let minDistance = Infinity;
 
@@ -98,11 +111,11 @@ function callLift(floor) {
     });
 
     if (selectedLift !== null) {
-        moveLift(selectedLift, floor);
+        moveLift(selectedLift, floor, direction);
     }
 }
 
-function moveLift(liftIndex, targetFloor) {
+function moveLift(liftIndex, targetFloor, direction) {
     const lift = document.getElementById(`lift-${liftIndex + 1}`);
     const liftState = liftsState[liftIndex];
 
@@ -116,6 +129,11 @@ function moveLift(liftIndex, targetFloor) {
         .then(() => {
             liftState.currentFloor = targetFloor;
             liftState.moving = false;
+
+            // Remove the call for this floor and direction once completed
+            if (calls[targetFloor]) {
+                delete calls[targetFloor][direction];
+            }
         })
         .catch(error => {
             console.error("Error during lift operation:", error);
