@@ -1,5 +1,6 @@
 let liftsState = [];
-let calls = {}; // Tracks active calls for each floor and direction
+let calls = {};
+let callQueue = []; // Queue to store pending lift calls
 
 function generateUI() {
     const floorsInput = document.getElementById('floors').value;
@@ -20,10 +21,11 @@ function generateUI() {
 
     building.innerHTML = '';
     liftsState = [];
-    calls = {}; // Reset the call tracking
+    calls = {}; 
+    callQueue = []; // Reset the call queue
 
     const liftWidth = 120;
-    const minWidth = 180; // Set a minimum width for the building
+    const minWidth = 180; 
     const containerWidth = Math.max(liftWidth * lifts, minWidth);
     building.style.width = `${containerWidth}px`;
 
@@ -87,9 +89,7 @@ function generateUI() {
     }
 }
 
-
 function callLift(floor, direction) {
-    // If there's already a call in the same direction, do nothing
     if (calls[floor] && calls[floor][direction]) {
         console.log(`Lift already called for floor ${floor} and direction ${direction}`);
         return;
@@ -98,9 +98,8 @@ function callLift(floor, direction) {
     if (!calls[floor]) {
         calls[floor] = {};
     }
-    calls[floor][direction] = true; // Mark the call as active for this floor and direction
+    calls[floor][direction] = true;
 
-    console.log(`Lift called to floor ${floor} in direction ${direction}`);
     let selectedLift = null;
     let minDistance = Infinity;
 
@@ -114,8 +113,39 @@ function callLift(floor, direction) {
 
     if (selectedLift !== null) {
         moveLift(selectedLift, floor, direction);
+    } else {
+        console.log(`All lifts are busy. Adding call for floor ${floor} and direction ${direction} to the queue.`);
+        callQueue.push({ floor, direction });
     }
 }
+
+function processQueuedCalls() {
+    if (callQueue.length === 0) return;
+
+    for (let i = 0; i < callQueue.length; i++) {
+        const { floor, direction } = callQueue[i];
+        let selectedLift = null;
+        let minDistance = Infinity;
+
+        liftsState.forEach((lift, index) => {
+            const distance = Math.abs(lift.currentFloor - floor);
+            if (!lift.moving && distance < minDistance) {
+                selectedLift = index;
+                minDistance = distance;
+            }
+        });
+
+        if (selectedLift !== null) {
+            console.log(`Processing queued call for floor ${floor} in direction ${direction}.`);
+            moveLift(selectedLift, floor, direction);
+            callQueue.splice(i, 1); 
+            i--; 
+        }
+    }
+}
+
+// Check the queue every 3 seconds for free lifts
+setInterval(processQueuedCalls, 3000);
 
 function moveLift(liftIndex, targetFloor, direction) {
     const lift = document.getElementById(`lift-${liftIndex + 1}`);
@@ -126,37 +156,30 @@ function moveLift(liftIndex, targetFloor, direction) {
     lift.style.transition = `transform ${moveDistance * 2}s`;
     lift.style.transform = `translateY(-${100 * (targetFloor - 1)}px)`;
 
-    // Move the lift and handle doors in sequence
     moveLiftAndHandleDoors(lift, moveDistance * 2000)
         .then(() => {
             liftState.currentFloor = targetFloor;
             liftState.moving = false;
 
-            // Remove the call for this floor and direction once completed
             if (calls[targetFloor]) {
                 delete calls[targetFloor][direction];
             }
         })
         .catch(error => {
             console.error("Error during lift operation:", error);
-            liftState.moving = false; // Ensure the lift state is updated even if an error occurs
+            liftState.moving = false;
         });
 }
 
 function moveLiftAndHandleDoors(lift, moveDuration) {
     return new Promise((resolve, reject) => {
-        // Start lift movement
         setTimeout(() => {
             openDoors(lift);
-
-            // Wait for doors to open
             setTimeout(() => {
                 closeDoors(lift);
-
-                // Wait for doors to close before resolving
                 setTimeout(() => {
                     resolve();
-                }, 2500); // Duration doors stay closed
+                }, 2500); 
             }, 2500); 
         }, moveDuration);
     });
