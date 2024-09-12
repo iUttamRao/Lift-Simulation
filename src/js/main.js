@@ -1,6 +1,6 @@
 let liftsState = [];
 let calls = {};
-let callQueue = []; // Queue to store pending lift calls
+let callQueue = [];
 
 function generateUI() {
     const floorsInput = document.getElementById('floors').value;
@@ -22,7 +22,7 @@ function generateUI() {
     building.innerHTML = '';
     liftsState = [];
     calls = {}; 
-    callQueue = []; // Reset the call queue
+    callQueue = [];
 
     const liftWidth = 120;
     const minWidth = 180; 
@@ -144,7 +144,6 @@ function processQueuedCalls() {
     }
 }
 
-// Check the queue every 3 seconds for free lifts
 setInterval(processQueuedCalls, 3000);
 
 function moveLift(liftIndex, targetFloor, direction) {
