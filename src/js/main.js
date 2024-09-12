@@ -23,7 +23,8 @@ function generateUI() {
     calls = {}; // Reset the call tracking
 
     const liftWidth = 120;
-    const containerWidth = liftWidth * lifts;
+    const minWidth = 180; // Set a minimum width for the building
+    const containerWidth = Math.max(liftWidth * lifts, minWidth);
     building.style.width = `${containerWidth}px`;
 
     for (let i = 0; i < floors; i++) {
@@ -85,6 +86,7 @@ function generateUI() {
         building.appendChild(floorDiv);
     }
 }
+
 
 function callLift(floor, direction) {
     // If there's already a call in the same direction, do nothing
