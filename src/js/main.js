@@ -152,7 +152,7 @@ function moveLift(liftIndex, targetFloor, direction) {
 
     liftState.moving = true;
     const moveDistance = Math.abs(liftState.currentFloor - targetFloor);
-    lift.style.transition = `transform ${moveDistance * 2}s`;
+    lift.style.transition = `transform ${moveDistance*2}s linear`;
     lift.style.transform = `translateY(-${100.67 * (targetFloor - 1)}px)`;
 
     moveLiftAndHandleDoors(lift, moveDistance * 2000)
